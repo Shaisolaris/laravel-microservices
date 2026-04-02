@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # ─── API Gateway ─────────────────────────────────────
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_DIR: gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_PORT=8000
+      - USER_SERVICE_URL=http://user-service:8001
+      - ORDER_SERVICE_URL=http://order-service:8002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8003
+      - INVENTORY_SERVICE_URL=http://inventory-service:8004
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - microservices
+
+  # ─── User Service ────────────────────────────────────
+  user-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_DIR: services/user-service
+    ports:
+      - "8001:8001"
+    environment:
+      - APP_PORT=8001
+      - DB_HOST=mysql
+      - DB_DATABASE=users_db
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - mysql
+      - rabbitmq
+    networks:
+      - microservices
+
+  # ─── Order Service ───────────────────────────────────
+  order-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_DIR: services/order-service
+    ports:
+      - "8002:8002"
+    environment:
+      - APP_PORT=8002
+      - DB_HOST=mysql
+      - DB_DATABASE=orders_db
+      - RABBITMQ_HOST=rabbitmq
+      - USER_SERVICE_URL=http://user-service:8001
+      - INVENTORY_SERVICE_URL=http://inventory-service:8004
+    depends_on:
+      - mysql
+      - rabbitmq
+    networks:
+      - microservices
+
+  # ─── Notification Service ────────────────────────────
+  notification-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_DIR: services/notification-service
+    ports:
+      - "8003:8003"
+    environment:
+      - APP_PORT=8003
+      - RABBITMQ_HOST=rabbitmq
+      - MAIL_MAILER=log
+    depends_on:
+      - rabbitmq
+    networks:
+      - microservices
+
+  # ─── Inventory Service ──────────────────────────────
+  inventory-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_DIR: services/inventory-service
+    ports:
+      - "8004:8004"
+    environment:
+      - APP_PORT=8004
+      - DB_HOST=mysql
+      - DB_DATABASE=inventory_db
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - mysql
+      - rabbitmq
+    networks:
+      - microservices
+
+  # ─── Infrastructure ─────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: users_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - microservices
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - microservices
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
+
+networks:
+  microservices:
+    driver: bridge
