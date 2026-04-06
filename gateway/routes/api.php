@@ -22,3 +22,4 @@ Route::prefix('products')->group(function () {
     Route::get('/', [GatewayController::class, 'listProducts']);
     Route::get('/{id}', [GatewayController::class, 'getProduct']);
 });
+// Demo mode: seed data available via php artisan db:seed
