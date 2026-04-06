@@ -1,5 +1,21 @@
 # laravel-microservices
 
+## Quick Start
+
+```bash
+git clone https://github.com/Shaisolaris/laravel-microservices.git
+cd laravel-microservices
+cp .env.example .env
+composer install --no-interaction
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate --seed
+php artisan serve
+# Open http://localhost:8000
+# Login: admin@demo.com / demo123
+```
+
+
 ![CI](https://github.com/Shaisolaris/laravel-microservices/actions/workflows/ci.yml/badge.svg)
 
 Laravel 11 microservices architecture with an API gateway, 4 independent services (User, Order, Inventory, Notification), RabbitMQ event-driven messaging, Docker Compose orchestration, circuit breaker pattern, distributed tracing, and per-service databases. Each service owns its data and communicates asynchronously via a shared message bus.
