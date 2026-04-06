@@ -1,5 +1,7 @@
 # laravel-microservices
 
+![CI](https://github.com/Shaisolaris/laravel-microservices/actions/workflows/ci.yml/badge.svg)
+
 Laravel 11 microservices architecture with an API gateway, 4 independent services (User, Order, Inventory, Notification), RabbitMQ event-driven messaging, Docker Compose orchestration, circuit breaker pattern, distributed tracing, and per-service databases. Each service owns its data and communicates asynchronously via a shared message bus.
 
 ## Stack
