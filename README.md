@@ -1,5 +1,8 @@
 # laravel-microservices
 
+
+Laravel microservices architecture with RabbitMQ messaging, API gateway, service discovery, and per-service databases.
+
 ## Quick Start
 
 ```bash
